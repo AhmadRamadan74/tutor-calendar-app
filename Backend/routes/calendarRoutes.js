@@ -2,10 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Calendar = require('../models/Calendar');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 // Parse natural language to time slots using Gemini AI
 router.post('/parse-availability', async (req, res) => {
   try {
@@ -17,8 +13,9 @@ router.post('/parse-availability', async (req, res) => {
         error: 'Availability text is required'
       });
     }
-
+    
     // Get Gemini model
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `You are a calendar parser. Parse the following tutor availability description into a structured weekly calendar.
