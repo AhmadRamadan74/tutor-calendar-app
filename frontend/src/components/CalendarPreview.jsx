@@ -55,7 +55,7 @@ const CalendarPreview = ({ data, onConfirm, onCancel }) => {
           <h3 className="font-semibold text-gray-700 mb-2">Your Description:</h3>
           <p className="text-gray-600 italic">"{availabilityDescription}"</p>
         </div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {timeSlots.map((slot, index) => (
             <div 

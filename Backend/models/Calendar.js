@@ -1,3 +1,4 @@
+// database schema for calendar and time slots
 const mongoose = require('mongoose');
 
 const timeSlotSchema = new mongoose.Schema({

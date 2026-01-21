@@ -1,8 +1,20 @@
+// logic for calendar routes ,endpoints 
 const express = require('express');
 const router = express.Router();
 const Calendar = require('../models/Calendar');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-// Parse natural language to time slots using Gemini AI
+
+
+
+
+let genAI = null;
+const getGenAI = () => {
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return genAI;
+};
+
 router.post('/parse-availability', async (req, res) => {
   try {
     const { text } = req.body;
@@ -14,7 +26,6 @@ router.post('/parse-availability', async (req, res) => {
       });
     }
     
-    // Get Gemini model
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
@@ -41,10 +52,8 @@ Now parse the availability description above and return ONLY the JSON array:`;
     const response = await result.response;
     const responseText = response.text();
 
-    // Extract the JSON from Gemini's response
     let timeSlots;
     try {
-      // Remove markdown code blocks if present
       let jsonText = responseText.trim();
       jsonText = jsonText.replace(/```json\n?/g, '');
       jsonText = jsonText.replace(/```\n?/g, '');
@@ -52,12 +61,10 @@ Now parse the availability description above and return ONLY the JSON array:`;
       
       timeSlots = JSON.parse(jsonText);
 
-      // Validate the parsed data
       if (!Array.isArray(timeSlots)) {
         throw new Error('Response is not an array');
       }
 
-      // Validate each time slot
       const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       timeSlots.forEach(slot => {
         if (!slot.day || !slot.startTime || !slot.endTime) {
@@ -96,7 +103,6 @@ Now parse the availability description above and return ONLY the JSON array:`;
   }
 });
 
-// Save calendar to database
 router.post('/calendar', async (req, res) => {
   try {
     const { availabilityDescription, timeSlots } = req.body;
@@ -129,7 +135,6 @@ router.post('/calendar', async (req, res) => {
   }
 });
 
-// Get all calendars
 router.get('/calendar', async (req, res) => {
   try {
     const calendars = await Calendar.find().sort({ createdAt: -1 });
@@ -149,7 +154,6 @@ router.get('/calendar', async (req, res) => {
   }
 });
 
-// Get single calendar by ID
 router.get('/calendar/:id', async (req, res) => {
   try {
     const calendar = await Calendar.findById(req.params.id);
@@ -175,7 +179,6 @@ router.get('/calendar/:id', async (req, res) => {
   }
 });
 
-// Update calendar
 router.put('/calendar/:id', async (req, res) => {
   try {
     const { availabilityDescription, timeSlots } = req.body;
@@ -211,7 +214,6 @@ router.put('/calendar/:id', async (req, res) => {
   }
 });
 
-// Delete calendar
 router.delete('/calendar/:id', async (req, res) => {
   try {
     const calendar = await Calendar.findByIdAndDelete(req.params.id);
